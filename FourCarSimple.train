@@ -1,0 +1,46 @@
+Train Start:
+	name: Ultra Express
+Car Start: 
+	carID: Modulo1
+	wheelDiam: 0.3
+	wheelBaseLength: 2.1
+	mass: 234.5
+	seatHeight: 1.3
+	passengerCapacity: 2
+	initialLoc: 11.2
+	frontLatch: 0.8 1.4
+	rearLatch: -2.4 1.4
+Car End: 
+Car Start: 
+	carID: Modulo2
+	wheelDiam: 0.4
+	wheelBaseLength: 2.1
+	mass: 234.5
+	seatHeight: 1.3
+	passengerCapacity: 2
+	initialLoc: 8
+	frontLatch: 0.8 1.4
+	rearLatch: -2.4 1.4
+Car End: 
+Car Start: 
+	carID: Modulo3
+	wheelDiam: 0.5
+	wheelBaseLength: 2.1
+	mass: 234.5
+	passengerCapacity: 2
+	initialLoc: 4.8
+	frontLatch: 0.8 1.2
+	rearLatch: -2.5 1.2
+Car End: 
+Car Start: 
+	carID: simple4
+	wheelBaseLength: 1.9
+	mass: 123.4
+	wheelDiam: 0.6
+	seatHeight: 1.3
+	initialLoc: 2.1
+	passengerCapacity: 4
+	frontLatch: 0.9 1.1
+	rearLatch: -2.0 1.1
+Car End: 
+Train End:

@@ -1,0 +1,42 @@
+Track Start:
+	trackName: Nestor03
+	displayWidth: 0.1
+	displayHue: 220
+	frictionCoeff: 0.09
+Path Start (Spline):
+5	5
+54.4	56.3
+64	65.4
+70	65
+78.4	55.2
+100	20
+115.1	12.4
+128.1	19.4
+132.7	29.6
+132.3	39.8
+125	45
+115	45
+107.5	40
+105.3	30.6
+113	21.8
+140	9
+160	7.5
+175	12.5
+Path End:
+Control Start:
+	controlName: Launch
+	endForce: 3450
+	endLoc: 55
+	startForce: 3450
+	finalVelocity: 40
+	startLoc: 0
+Control End:
+Control Start:
+	controlName: Braking01
+	endForce: 0
+	endLoc: 300
+	startForce: -26
+	finalVelocity: 20
+	startLoc: 257
+Control End:
+Track End:
