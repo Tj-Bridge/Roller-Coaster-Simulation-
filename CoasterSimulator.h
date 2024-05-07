@@ -52,7 +52,7 @@ namespace ps7coasterng27sp24 {
 		~CoasterSimulator()
 		{
 			// if simulation is running, stop it to avoid errors on exit
-			if (continueSimulation) { 
+			if (continueSimulation) {
 				continueSimulation = false;  // force thread to quit "naturally"
 				simulationThread->Join(); // wait until thread is actually done
 			}
@@ -75,7 +75,9 @@ namespace ps7coasterng27sp24 {
 		// main data variables
 		Track* theTrack = nullptr;
 		Train* theTrain = nullptr;
-
+		Point2D* clickedPnt = nullptr; // model coords of clicked pnt (now class-level)
+		Point2D* nearPnt = nullptr; // point on track nearest to clickPnt
+		bool clicked = false;
 		int panX = 300, panY = 300, currX, currY;
 		float zoomLevel = 1.f;
 		bool mouseInPanel = false;
@@ -140,7 +142,7 @@ namespace ps7coasterng27sp24 {
 	private: System::Windows::Forms::ComboBox^ comboBoxControls;
 
 	private: System::Windows::Forms::Label^ label13;
-private: System::Windows::Forms::TextBox^ textBoxFinalVelocity;
+	private: System::Windows::Forms::TextBox^ textBoxFinalVelocity;
 
 
 	private: System::Windows::Forms::TextBox^ textBoxStartLoc;
@@ -179,13 +181,13 @@ private: System::Windows::Forms::TextBox^ textBoxFinalVelocity;
 
 	private: System::Windows::Forms::Label^ label19;
 	private: System::Windows::Forms::Button^ buttonMajorEdits;
-private: System::Windows::Forms::Label^ label17;
-private: System::Windows::Forms::Label^ labelCurrCar;
-private: System::Windows::Forms::Button^ buttonSaveCar;
-private: System::Windows::Forms::Button^ buttonAddCarFront;
-private: System::Windows::Forms::Button^ buttonDeleteCar;
-private: System::Windows::Forms::Button^ buttonAddCarRear;
-private: System::Windows::Forms::Button^ buttonControlEdit;
+	private: System::Windows::Forms::Label^ label17;
+	private: System::Windows::Forms::Label^ labelCurrCar;
+	private: System::Windows::Forms::Button^ buttonSaveCar;
+	private: System::Windows::Forms::Button^ buttonAddCarFront;
+	private: System::Windows::Forms::Button^ buttonDeleteCar;
+	private: System::Windows::Forms::Button^ buttonAddCarRear;
+	private: System::Windows::Forms::Button^ buttonControlEdit;
 
 
 
@@ -1195,6 +1197,12 @@ private: System::Windows::Forms::Button^ buttonControlEdit;
 			}
 			else
 				theTrain->paint(g);
+		if (clickedPnt != nullptr) {
+			if (clicked) {
+				Pen^ linePen = gcnew Pen(Color::Black, 2);
+				g->DrawLine(linePen, clickedPnt->x, clickedPnt->y, nearPnt->x, nearPnt->y);
+			}
+		}
 	}
 
 	private: System::Void buttonLoad_Click(System::Object^ sender, System::EventArgs^ e) {
@@ -1285,7 +1293,7 @@ private: System::Windows::Forms::Button^ buttonControlEdit;
 							labelCurrCar->Text = "1";
 							theTrain->addCar(aCar, 0, sender->Equals(buttonAddCarFront));
 						}
-						else if (labelCurrCar->Text != "-"){
+						else if (labelCurrCar->Text != "-") {
 
 							theTrain->addCar(aCar, Convert::ToInt32(labelCurrCar->Text),
 								sender->Equals(buttonAddCarFront));
@@ -1408,17 +1416,19 @@ private: System::Windows::Forms::Button^ buttonControlEdit;
 
 	private: System::Void mainPanel_MouseDown(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) {
 
-		if (e->Button == System::Windows::Forms::MouseButtons::Middle
-			|| e->Button == System::Windows::Forms::MouseButtons::Left) {
+		if (e->Button == System::Windows::Forms::MouseButtons::Middle || e->Button == System::Windows::Forms::MouseButtons::Left) {
 			currX = e->X;		// need to set the initial click position to avoid "jumping"
 			currY = e->Y;
 
 			// determine in the click was near a path point
-			Point2D clickedPnt = getWorldCoords(e->X, e->Y); // convert the click location to "world" coordinates
+			// show coords on labelFeedback
+			clicked = false;
+			clickedPnt = new Point2D;
+			*clickedPnt = getWorldCoords(e->X, e->Y);
 			int pixelProximity = 5;  // increase this numner to make it "easier" to click on a point
 			float modelSelectDistance = pixelProximity / zoomLevel;
 			if (theTrack != nullptr && theTrack->getPath() != nullptr) {
-				int clickedIndex = theTrack->getPath()->getIndex(clickedPnt, modelSelectDistance); // this is why you wrote this function
+				int clickedIndex = theTrack->getPath()->getIndex({ clickedPnt->x , clickedPnt->y }, modelSelectDistance); // this is why you wrote this function
 				if (clickedIndex != -1) {// if the click is near a point
 					auto clickedPoint = theTrack->getPath()->getPoint(clickedIndex);
 					labelFeedback->Text = "Just clicked on point " + clickedIndex.ToString()
@@ -1441,13 +1451,18 @@ private: System::Windows::Forms::Button^ buttonControlEdit;
 		}
 		if (e->Button == System::Windows::Forms::MouseButtons::Right) {
 			// show coords on labelFeedback
-			Point2D clickedPnt;
-			if (theTrack != nullptr && theTrack->getPath() != nullptr)
-				clickedPnt = getWorldCoords(e->X, e->Y);
-			else
-				clickedPnt = { e->X * 1.f, e->Y * 1.f }; // need to convert to float
-
-			labelFeedback->Text = StringPlus::sigFigs(clickedPnt.x, 4) + ", " + StringPlus::sigFigs(clickedPnt.y, 4);
+			clickedPnt = new Point2D;
+			nearPnt = new Point2D;
+			if (theTrack != nullptr && theTrack->getPath() != nullptr) {
+				clicked = true;
+				*clickedPnt = getWorldCoords(e->X, e->Y);
+				*nearPnt = theTrack->getPath()->getNearest(*clickedPnt);
+			}
+			else {
+				clickedPnt->x = e->X * 1.f;
+				clickedPnt->y = e->Y * 1.f; // need to convert to float
+			}
+			labelFeedback->Text = StringPlus::sigFigs(clickedPnt->x, 4) + ", " + StringPlus::sigFigs(clickedPnt->y, 4);
 		}
 	}
 
@@ -2109,7 +2124,7 @@ private: System::Windows::Forms::Button^ buttonControlEdit;
 
 	private: System::Void buttonDeleteCar_Click(System::Object^ sender, System::EventArgs^ e) {
 		if (inEditMode && theTrain != nullptr && labelCurrCar->Text != "-") {
-			auto confirm = MessageBox::Show("Car #" + labelCurrCar->Text+
+			auto confirm = MessageBox::Show("Car #" + labelCurrCar->Text +
 				" will be permanently deleted.\n\nAre you sure ? ",
 				"Are you sure?", MessageBoxButtons::YesNo, MessageBoxIcon::Warning);
 			if (confirm == System::Windows::Forms::DialogResult::Yes) {
@@ -2119,20 +2134,20 @@ private: System::Windows::Forms::Button^ buttonControlEdit;
 
 		}
 	}
-private: System::Void buttonControlEdit_Click(System::Object^ sender, System::EventArgs^ e) {
-	if (theTrack != nullptr && theTrack->getPath() != nullptr) {
-		if (controlEditsForm == nullptr || !controlEditsForm->Visible) {
-			if (controlEditsForm != nullptr)
-				delete controlEditsForm;
-			controlEditsForm = gcnew ControlEdits(theTrack, mainPanel);
+	private: System::Void buttonControlEdit_Click(System::Object^ sender, System::EventArgs^ e) {
+		if (theTrack != nullptr && theTrack->getPath() != nullptr) {
+			if (controlEditsForm == nullptr || !controlEditsForm->Visible) {
+				if (controlEditsForm != nullptr)
+					delete controlEditsForm;
+				controlEditsForm = gcnew ControlEdits(theTrack, mainPanel);
+			}
+			controlEditsForm->Show();
 		}
-		controlEditsForm->Show();
+		else
+			labelFeedback->Text = "Must load/create a track to use feature.";
 	}
-	else
-		labelFeedback->Text = "Must load/create a track to use feature.";
-}
 
 
-};
+	};
 }
 

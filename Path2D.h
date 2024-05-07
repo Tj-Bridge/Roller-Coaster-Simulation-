@@ -1,10 +1,10 @@
 /*
 									Nestor Gomez
 									Carnegie Mellon University
-			    _ _ . 	_			C++ for Engrs, 24-280
+				_ _ . 	_			C++ for Engrs, 24-280
 			  .'	 `./  \			PS06.  Due Tues. Apr. 2, 2024
-		     /		  /`   |	
-            /        |  \._/		Class for maintaining a path in
+			 /		  /`   |
+			/        |  \._/		Class for maintaining a path in
   ._ _ _ _./          \				2 dimensions, with input/output
 									and graphical computation.
 									Now with slight changes for inheritance
@@ -23,7 +23,8 @@ class Path2D {
 protected:
 	std::vector<Point2D> thePoints;
 	float currLength;
-	float minX, minY, maxX, maxY; // to maintain the bounding box of path
+	float minX, minY, maxX, maxY;
+
 
 public:
 	// default constructor for the class. Initializes member variables only.
@@ -33,7 +34,7 @@ public:
 	// for the path.Note that the method’s parameter cannot be a string filename because the file may
 	// 	already be in the process of being read.The constructor needs to instantiate any constituent objects
 	// 	and /or data structures.
-	Path2D(std::ifstream &input);
+	Path2D(std::ifstream& input);
 
 	// adds a coordinate point such that the new point becomes the index-th point . For example, an index value of
 	// 3 will insert a point between the existing 2nd and 3rd points such that the new point becomes the new
@@ -48,12 +49,14 @@ public:
 		return addPoint({ newX, newY }, index);
 	};
 
+
 	// creates a coordinate point between vertices index-1 and index and inserts it into the line segment at the given
 	// ratio.The ratio is a number greater than zero and less than 1. Note that, like above, the new point
 	// 	becomes the index-th point.Returns false if it cannot insert point (e.g., index is too large or too small,
 	// 	ratio value is inappropriate).[A ratio close to zero will insert the new vertex near index - 1; a ratio of
 	// 	0.5 will insert the new vertex at the middle of the segment;and a ratio close to 1 will insert the new
 	// 	vertex near old index.]
+
 	bool addPoint(int index, float ratio);
 
 	// removes the indicated point from the path. Function returns false only if the point cannot be removed for any
@@ -71,7 +74,7 @@ public:
 	int numbPoints() { return thePoints.size(); };
 
 	// returns the length of the path.
-	float length() { return currLength;	};
+	float length() { return currLength; };
 
 	// outputs all the coordinates of the path to the console
 	void print();
@@ -84,30 +87,34 @@ public:
 
 	// get coordinates of a point. The first point has index 1. Returns false if index is invalid.
 	Point2D getPoint(int index);
-	
+
 	// get index of the first point on the path that is nearer than nearDistance to the given checkPoint
 	// The first point has index 1. Returns -1 if no point is near checkPoint.
 	int getIndex(Point2D checkPoint, float nearDistance = 0.1);
-	
+
 	// moves a point to new coordinates. The first point has index 1. Returns false if index is invalid.
 	bool movePoint(Point2D newCoords, int index);
-	
+
 	// changes the coordinates of a point by the given delta. The first point has index 1.
 	// Returns false if index is invalid
 	bool movePointDelta(Point2D deltaCoords, int index);
-	
+
+	// returns the coordinates of the point on the path (not necessarily
+	// a defining point on the path) that is nearest givenPnt
+	Point2D getNearest(Point2D givenPnt);
+
 	// return a point corresponding to the upper right corner of a bounding box for the path
 	// (maximum X and maximum Y value of all points).
 	Point2D upperBoundingBox() { return { maxX, maxY }; }
-	
+
 	// return a point corresponding to the lower left corner of a bounding box for the path
 	// (minimum X andminimum Y value of all points).
 	Point2D lowerBoundingBox() { return { minX, minY }; }
-	
+
 	// returns the coordinates of center of the bounding rectangle that encompasses the path.
 	// Returns (-INFINITY, -INFINITY) if the path has no points.
-	Point2D center() { return { (minX + maxX) /2.f, (minY + maxY)/2.f }; }
-	
+	Point2D center() { return { (minX + maxX) / 2.f, (minY + maxY) / 2.f }; }
+
 	// determines the coordinate of a point along the path that is givenLength from the starting point. Returns
 	// {-INFINITY, -INFINITY} if givenLength is greater than the length of the path.
 	virtual Point2D coordsFromLength(float givenLength);
@@ -122,7 +129,7 @@ public:
 	// determines the angle (0-360 deg) of the path at a point along the path that is givenLength from the
 	// starting point. Returns{-INFINITY, -INFINITY} if givenLength is invalid.
 	virtual float angleFromLength(float givenLength);
-	
+
 	// generates the geometry of the path on the given graphic space, with given color and other parameters
 	// (many of which have default values for now). Also has ability to selectively show labels
 	virtual void paint(Graphics^ g, Color c = Color::CornflowerBlue,
@@ -133,7 +140,7 @@ public:
 	// returns -1 if givenPoint is not on path
 	// optional parameter minLength indicates that we can skip to that length 
 	// before searching (possibly saving some processing time)
-	virtual float lengthFromCoords(Point2D givenPoint, float minLength = 0){
+	virtual float lengthFromCoords(Point2D givenPoint, float minLength = 0) {
 		return lengthFromCoordsAux(givenPoint, minLength, thePoints);
 	}
 
@@ -163,7 +170,6 @@ public:
 	// given line segment defined from start point to end point. 
 	// Hint: not as difficult as it appears
 	void mirror(Point2D startPnt, Point2D endPnt);
-
 
 
 protected:

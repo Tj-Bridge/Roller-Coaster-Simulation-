@@ -35,6 +35,12 @@ public:
 	// extrapolated “before” start point.
 	static Point2D scale(Point2D startPnt, Point2D endPnt, float fraction);
 
+	// given the line segment from startPnt to endPnt, returns the coordinates
+	// of the point on the segment that is nearest to givenPnt. The result may be
+	// startPnt, endPnt, or any point in between, if appropriate to calculate
+	// perpendicular distance (projection).
+	static Point2D getNearest(Point2D startPnt, Point2D endPnt, Point2D givenPnt);
+
 	// returns a point such that a segment from startPnt to the result is perpendicular to the segment 
 	// and has a unit length (much easier than you think, no need for sine and cosine)
 	static Point2D getPerpendicular(Point2D startPnt, Point2D endPnt);

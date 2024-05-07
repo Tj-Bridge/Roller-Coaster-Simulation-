@@ -17,6 +17,50 @@ Point2D Line2D::scale(Point2D startPnt, Point2D endPnt, float fraction)
 	return result;
 }
 
+Point2D Line2D::getNearest(Point2D startPnt, Point2D endPnt, Point2D givenPnt)
+{
+	// Actual Way
+	Point2D refPnt = endPnt;
+	Point2D oldPnt1 = startPnt;
+	Point2D oldPnt2 = givenPnt;
+	Point2D newStart;
+	Point2D newGiven;
+	Point2D nearestPnt;
+	float angleRad = angleBetween(startPnt, endPnt, givenPnt) * 3.14 / 180;
+	float dist1 = getLength(startPnt, givenPnt);
+	float dist2 = dist1 * cos(angleRad);
+	float segmentLength = getLength(startPnt, endPnt);
+	if (dist2 > segmentLength)
+		nearestPnt = endPnt;
+	else if (dist2 < 0)
+		nearestPnt = startPnt;
+	else
+		nearestPnt = scale(startPnt, endPnt, dist2 / segmentLength);
+	return nearestPnt;
+
+	// Experimental Rotation based method (Currently Does Not Work)
+
+	// Rotate the line segment and givenPoint about the end point (doesnt matter if its about the end point or start point)
+	newStart.x = (oldPnt1.x - refPnt.x) * cos(angleRad) - (oldPnt1.y - refPnt.y) * sin(angleRad) + refPnt.x;
+	newStart.y = (oldPnt1.x - refPnt.x) * sin(angleRad) + (oldPnt1.y - refPnt.y) * cos(angleRad) + refPnt.y;
+	newGiven.x = (oldPnt2.x - refPnt.x) * cos(angleRad) - (oldPnt2.y - refPnt.y) * sin(angleRad) + refPnt.x;
+	newGiven.y = (oldPnt2.x - refPnt.x) * sin(angleRad) + (oldPnt2.y - refPnt.y) * cos(angleRad) + refPnt.y;
+	// case into if the nearestPnt are either 1 of 2 endPnts
+	float deltaY = abs(newGiven.y - newStart.y);
+	float deltaX = abs(newGiven.x - newStart.x);
+	if (newGiven.x < newStart.x)
+		nearestPnt = startPnt;
+	else if (newGiven.x > endPnt.x)
+		nearestPnt = endPnt;
+	else
+		nearestPnt.y = newGiven.y + deltaY;
+	nearestPnt.x = newGiven.x + deltaX;
+	// Rotate the found nearestPnt back to find the new nearestPnt Coordinates
+	nearestPnt.x = (nearestPnt.x - refPnt.x) * cos(-angleRad) - (nearestPnt.y + refPnt.y) * sin(-angleRad) + refPnt.x;
+	nearestPnt.y = (nearestPnt.x - refPnt.x) * sin(-angleRad) + (nearestPnt.y - refPnt.y) * cos(-angleRad) + refPnt.y;
+	return nearestPnt;
+}
+
 Point2D Line2D::getPerpendicular(Point2D startPnt, Point2D endPnt)
 {
 	float segLength = getLength(startPnt, endPnt);
@@ -34,11 +78,11 @@ Point2D Line2D::getPerpendicular(Point2D startPnt, Point2D endPnt)
 }
 
 float Line2D::getAngle(Point2D startPnt, Point2D endPnt)
-{	
+{
 	// Note: 45 deg = PI/2 = atan(1.)  
 	//     >>>  multiply by 45./atan(1.) to convert from radians to degrees
-	float answer = atan2(endPnt.y - startPnt.y, endPnt.x - startPnt.x) * 45. / atan(1.); 
-	
+	float answer = atan2(endPnt.y - startPnt.y, endPnt.x - startPnt.x) * 45. / atan(1.);
+
 	return fmodf(answer + 360., 360.);  // fmodf and adding 360, makes answer between 0 and 360
 }
 
@@ -83,21 +127,9 @@ bool Line2D::isBetween(Point2D startPoint, Point2D checkPoint, Point2D endPoint)
 
 float Line2D::angleBetween(Point2D start, Point2D end1, Point2D end2)
 {
-	// from dot product formula a . b = |a||b| cos(theta)
-	// and a . b = ax*bx + ay*by
-	// -> cosTheta = (ax * bx + ay * by ) / len(a) / len(b)
-	// be careful that cosTheta not be less than -1 or greater than +1 before trying acos(function)
-	float lengthA = getLength(start, end1);
-	float lengthB = getLength(start, end2);
-
-	if (fabs(lengthA) < 1e-8 || fabs(lengthB) < 1e-8)
-		return 0;
-	else {
-		float cosTheta = ((end1.x - start.x) * (end2.x - start.x) + (end1.y - start.y) * (end2.y - start.y))
-			/ lengthA / lengthB;
-		if (cosTheta < -1) cosTheta = -1.f;
-		if (cosTheta > 1) cosTheta = 1.f;
-
-		return acos(cosTheta) * 45.f / atan(1.);
-	}
+	float angle = getAngle(start, end1) - getAngle(start, end2);
+	if (angle < 0)
+		return angle + 360;
+	return angle;
+	
 }

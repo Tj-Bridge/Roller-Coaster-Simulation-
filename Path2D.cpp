@@ -5,7 +5,7 @@
 
 using namespace std;
 
-void Path2D::paint(Graphics^ g, Color c, bool showPoints, float width, 
+void Path2D::paint(Graphics^ g, Color c, bool showPoints, float width,
 	bool showLabels, bool fill)
 {
 	if (thePoints.size() > 1) {
@@ -415,6 +415,25 @@ int Path2D::getIndex(Point2D checkPoint, float nearDistance)
 			return -1;
 	}
 
+}
+
+Point2D Path2D::getNearest(Point2D givenPnt)
+{
+	float minLength = INFINITY;
+	float currLength;
+	Point2D bestPnt = { INFINITY, INFINITY };
+	Point2D currPnt;
+
+	int i;
+	for (i = 0; i < thePoints.size()-1; i++) {// Loop through all the points in the path, collect the distance between the given and path points
+		currPnt = Line2D::getNearest(thePoints[i], thePoints[i + 1], givenPnt);
+		currLength = Line2D::getLength(givenPnt, currPnt);
+		if (currLength < minLength) { // If the distance is shorter then update minLength and bestPnt
+			minLength = currLength;
+			bestPnt = currPnt;
+		}
+	}
+	return bestPnt;
 }
 
 bool Path2D::movePoint(Point2D newCoords, int index)
